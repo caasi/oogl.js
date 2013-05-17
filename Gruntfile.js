@@ -22,36 +22,23 @@ module.exports = function (grunt) {
 		'src/ContextEnd.js',
 		'src/RenderLoop.js',
 		];
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.initConfig({
 		meta: {
-			version: '1.0.0',
+			version: '1.0.1',
 			banner: '/*! Object-Oriented Graphics Library - v<%= meta.version %> - ' +
 				'<%= grunt.template.today("yyyy-mm-dd") %>\n' +
 				'* Released under the MIT License\n' +
 				'* http://oogljs.com/\n' +
 				'* Copyright (c) <%= grunt.template.today("yyyy") %> Alberto La Rocca */'
 		},
-		lint: {
-			files: [
-				'src/OOGL.js',
-				'src/Ajax.js',
-				'src/Vector2.js',
-				'src/Vector3.js',
-				'src/Vector4.js',
-				'src/Loader.js',
-				'src/Matrix2.js',
-				'src/Matrix3.js',
-				'src/Matrix4.js',
-				'src/Buffers.js',
-				'src/Arrays.js',
-				'src/Textures.js',
-				'src/Shaders.js',
-				'src/Programs.js',
-				'src/Framebuffer.js',
-				'src/Renderbuffer.js',
-				'src/RenderLoop.js',
-				'src/Timing.js',
-				]
+		concat: {
+			dist: {
+				src: files,
+				dest: 'oogl-<%= meta.version %>.js'
+			}
 		},
 		jshint: {
 			options: {
@@ -74,25 +61,25 @@ module.exports = function (grunt) {
 				multistr: true,
 				smarttabs: true,
 				supernew: true,
-				browser: true
+				browser: true,
+			  globals: {
+				  ActiveXObject: false
+			  }
 			},
-			globals: {
-				ActiveXObject: false
-			}
+      beforeconcat: files,
+			afterconcat: ['oogl-<%= meta.version %>.js']
 		},
-		concat: {
+		uglify: {
 			dist: {
-				src: files,
-				dest: 'oogl-<%= meta.version %>.js'
-			}
-		},
-		min: {
-			dist: {
-				src: files,
-				dest: 'oogl-<%= meta.version %>.min.js'
+        files: [
+          {
+            src: ['oogl-<%= meta.version %>.js'],
+            dest: 'oogl-<%= meta.version %>.min.js'
+          }
+        ]
 			}
 		}
 	});
-	grunt.registerTask('default', 'min');
-	grunt.registerTask('debug', 'lint concat');
+	grunt.registerTask('default', ['concat', 'uglify']);
+	grunt.registerTask('debug', ['jshint']);
 };

@@ -11,6 +11,12 @@
     "express": "",
     "openurl": ""
   },
+  "devDependencies": {
+    "grunt": "",
+    "grunt-contrib-concat": ""
+    "grunt-contrib-jshint": ""
+    "grunt-contrib-uglify": ""
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/71104/oogl.js.git"
