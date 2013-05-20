@@ -27,7 +27,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.initConfig({
 		meta: {
-			version: '1.0.1',
+			version: '1.0.2',
 			banner: '/*! Object-Oriented Graphics Library - v<%= meta.version %> - ' +
 				'<%= grunt.template.today("yyyy-mm-dd") %>\n' +
 				'* Released under the MIT License\n' +

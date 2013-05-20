@@ -14,21 +14,23 @@
  * and the provided `pointer` method invokes `gl.vertexAttribPointer` with the
  * specified `index` and `type`.
  *
- * @class context.AttributeArray1
+ * @class context.AttributeArray
  * @extends context.StaticArrayBuffer
  * @constructor
  * @param {Number} index The attribute array index.
  * @param {String} type One of `byte`, `ubyte`, `short`, `ushort` or `float`;
  *	indicates the type of the data that will be put in the buffer.
+ * @param {Number} num Number of components.
+ * @param {String} buffer_type One of `static`, `steam` or `dynamic`.
  * @param {Number[]} data A JavaScript `Array` containing the array data; it
  *	will be automatically converted to a typed array.
  * @param {Boolean} [normalize=false] Indicates whether the elements of the
  *	array must be automatically normalized by the GL (see the explanation for
  *	the equivalent argument in `gl.vertexAttribPointer`).
  * @example
- *	var array = new oogl.AttributeArray1(0, 'float', [1, 2, 3, 4, 5, 6, 7, 8]);
+ *	var array = new oogl.AttributeArray(0, 'float', 1, [1, 2, 3, 4, 5, 6, 7, 8]);
  */
-context.AttributeArray1 = function (index, type, data, normalize) {
+context.AttributeArray = function (index, type, num, buffer_type, data, normalize) {
 	var types = {
 		'byte': {
 			glType: context.BYTE,
@@ -51,11 +53,16 @@ context.AttributeArray1 = function (index, type, data, normalize) {
 			size: 4
 		}
 	};
+  var buffer_types = {
+    'static': context.StaticArrayBuffer,
+    'stream': context.StreamArrayBuffer,
+    'dynamic': context.DynamicArrayBuffer
+  };
 	if (!types.hasOwnProperty(type)) {
 		throw 'Invalid attribute type, must be one of "byte", "ubyte", "short", "ushort" and "float".';
 	}
 
-	var buffer = new context.StaticArrayBuffer(type);
+	var buffer = new buffer_types[buffer_type](type);
 	buffer.bindAndData(data);
 
 	/**
@@ -105,7 +112,7 @@ context.AttributeArray1 = function (index, type, data, normalize) {
 	 *	array.pointer();
 	 */
 	buffer.pointer = function (stride, offset) {
-		context.vertexAttribPointer(index, 1, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
+		context.vertexAttribPointer(index, num, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
 	};
 
 	/**
@@ -130,7 +137,7 @@ context.AttributeArray1 = function (index, type, data, normalize) {
 	 */
 	buffer.bindAndPointer = function (stride, offset) {
 		context.bindBuffer(context.ARRAY_BUFFER, buffer);
-		context.vertexAttribPointer(index, 1, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
+		context.vertexAttribPointer(index, num, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
 	};
 
 	/**
@@ -151,472 +158,26 @@ context.AttributeArray1 = function (index, type, data, normalize) {
 	buffer.enableBindAndPointer = function (stride, offset) {
 		context.enableVertexAttribArray(index);
 		context.bindBuffer(context.ARRAY_BUFFER, buffer);
-		context.vertexAttribPointer(index, 1, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
+		context.vertexAttribPointer(index, num, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
 	};
 
 	return buffer;
 };
 
 /**
- * Creates an array buffer with static draw usage representing a 2-component
- * vertex attribute array.
- *
- * The attribute array is associated to the specified `index`: the provided
- * `enable` and `disable` methods enable and disable the `index`-th attribute
- * array calling `gl.enableVertexAttribArray` and `gl.disableVertexAttribArray`
- * and the provided `pointer` method invokes `gl.vertexAttribPointer` with the
- * specified `index` and `type`.
- *
- * @class context.AttributeArray2
- * @extends context.StaticArrayBuffer
- * @constructor
- * @param {Number} index The attribute array index.
- * @param {String} type One of `byte`, `ubyte`, `short`, `ushort` or `float`;
- *	indicates the type of the data that will be put in the buffer.
- * @param {Number[]} data A JavaScript `Array` containing the array data; it
- *	will be automatically converted to a typed array.
- * @param {Boolean} [normalize=false] Indicates whether the elements of the
- *	array must be automatically normalized by the GL (see the explanation for
- *	the equivalent argument in `gl.vertexAttribPointer`).
- * @example
- *	var array = new oogl.AttributeArray2(0, 'float', [1, 2, 3, 4, 5, 6, 7, 8]);
+ * Backward compatible and new attribute arrays.
  */
-context.AttributeArray2 = function (index, type, data, normalize) {
-	var types = {
-		'byte': {
-			glType: context.BYTE,
-			size: 1
-		},
-		'ubyte': {
-			glType: context.UNSIGNED_BYTE,
-			size: 1
-		},
-		'short': {
-			glType: context.SHORT,
-			size: 2
-		},
-		'ushort': {
-			glType: context.UNSIGNED_SHORT,
-			size: 2
-		},
-		'float': {
-			glType: context.FLOAT,
-			size: 4
-		}
-	};
-	if (!types.hasOwnProperty(type)) {
-		throw 'Invalid attribute type, must be one of "byte", "ubyte", "short", "ushort" and "float".';
-	}
-
-	var buffer = new context.StaticArrayBuffer(type);
-	buffer.bindAndData(data);
-
-	/**
-	 * Enables the `index`-th vertex attribute array.
-	 *
-	 * `gl.enableVertexAttribArray` equivalent.
-	 *
-	 * @method enable
-	 * @example
-	 *	TODO
-	 */
-	buffer.enable = function () {
-		context.enableVertexAttribArray(index);
-	};
-
-	/**
-	 * Disables the `index`-th vertex attribute array.
-	 *
-	 * `gl.disableVertexAttribArray` equivalent.
-	 *
-	 * @method disable
-	 * @example
-	 *	TODO
-	 */
-	buffer.disable = function () {
-		context.disableVertexAttribArray(index);
-	};
-
-	/**
-	 * Specifies a pointer to this buffer for the `index`-th vertex attribute
-	 * array.
-	 *
-	 * `gl.vertexAttribPointer` equivalent.
-	 *
-	 * @method pointer
-	 * @param {Number} [stride=0] The stride between consecutive elements in the
-	 *	array (see the explanation for the equivalent argument in
-	 *	`gl.vertexAttribPointer`).
-	 * @param {Number} [offset=0] The index of the first element of the
-	 *	underlying buffer to be used for the attribute array.
-	 *
-	 * This value is multiplied by the data type size and used as the `pointer`
-	 * parameter in the `gl.vertexAttribPointer` call.
-	 * @example
-	 *	var array = new oogl.AttributeArray2(0, 'float', [1, 2, 3, 4, 5, 6, 7, 8]);
-	 *	array.bind();
-	 *	array.pointer();
-	 */
-	buffer.pointer = function (stride, offset) {
-		context.vertexAttribPointer(index, 2, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
-	};
-
-	/**
-	 * Binds this buffer to its target and then specifies its pointer for the
-	 * `index`-th vertex attribute array.
-	 *
-	 * You may optionally specify `stride` and `offset` parameters.
-	 *
-	 * Equivalent to calling `bind` and `pointer` subsequently.
-	 *
-	 * @method bindAndPointer
-	 * @param {Number} [stride=0] The stride between consecutive elements in the
-	 *	array (see the explanation for the equivalent argument in
-	 *	`gl.vertexAttribPointer`).
-	 * @param {Number} [offset=0] The index of the first element of the
-	 *	underlying buffer to be used for the attribute array.
-	 *
-	 * This value is multiplied by the data type size and used as the `pointer`
-	 * parameter in the `gl.vertexAttribPointer` call.
-	 * @example
-	 *	buffer.bindAndPointer();
-	 */
-	buffer.bindAndPointer = function (stride, offset) {
-		context.bindBuffer(context.ARRAY_BUFFER, buffer);
-		context.vertexAttribPointer(index, 2, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
-	};
-
-	/**
-	 * TODO
-	 *
-	 * @method enableBindAndPointer
-	 * @param {Number} [stride=0] The stride between consecutive elements in the
-	 *	array (see the explanation for the equivalent argument in
-	 *	`gl.vertexAttribPointer`).
-	 * @param {Number} [offset=0] The index of the first element of the
-	 *	underlying buffer to be used for the attribute array.
-	 *
-	 * This value is multiplied by the data type size and used as the `pointer`
-	 * parameter in the `gl.vertexAttribPointer` call.
-	 * @example
-	 *	TODO
-	 */
-	buffer.enableBindAndPointer = function (stride, offset) {
-		context.enableVertexAttribArray(index);
-		context.bindBuffer(context.ARRAY_BUFFER, buffer);
-		context.vertexAttribPointer(index, 2, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
-	};
-
-	return buffer;
-};
-
-/**
- * Creates an array buffer with static draw usage representing a 3-component
- * vertex attribute array.
- *
- * The attribute array is associated to the specified `index`: the provided
- * `enable` and `disable` methods enable and disable the `index`-th attribute
- * array calling `gl.enableVertexAttribArray` and `gl.disableVertexAttribArray`
- * and the provided `pointer` method invokes `gl.vertexAttribPointer` with the
- * specified `index` and `type`.
- *
- * @class context.AttributeArray3
- * @extends context.StaticArrayBuffer
- * @constructor
- * @param {Number} index The attribute array index.
- * @param {String} type One of `byte`, `ubyte`, `short`, `ushort` or `float`;
- *	indicates the type of the data that will be put in the buffer.
- * @param {Number[]} data A JavaScript `Array` containing the array data; it
- *	will be automatically converted to a typed array.
- * @param {Boolean} [normalize=false] Indicates whether the elements of the
- *	array must be automatically normalized by the GL (see the explanation for
- *	the equivalent argument in `gl.vertexAttribPointer`).
- * @example
- *	var array = new oogl.AttributeArray3(0, 'float', [1, 2, 3, 4, 5, 6, 7, 8]);
- */
-context.AttributeArray3 = function (index, type, data, normalize) {
-	var types = {
-		'byte': {
-			glType: context.BYTE,
-			size: 1
-		},
-		'ubyte': {
-			glType: context.UNSIGNED_BYTE,
-			size: 1
-		},
-		'short': {
-			glType: context.SHORT,
-			size: 2
-		},
-		'ushort': {
-			glType: context.UNSIGNED_SHORT,
-			size: 2
-		},
-		'float': {
-			glType: context.FLOAT,
-			size: 4
-		}
-	};
-	if (!types.hasOwnProperty(type)) {
-		throw 'Invalid attribute type, must be one of "byte", "ubyte", "short", "ushort" and "float".';
-	}
-
-	var buffer = new context.StaticArrayBuffer(type);
-	buffer.bindAndData(data);
-
-	/**
-	 * Enables the `index`-th vertex attribute array.
-	 *
-	 * `gl.enableVertexAttribArray` equivalent.
-	 *
-	 * @method enable
-	 * @example
-	 *	TODO
-	 */
-	buffer.enable = function () {
-		context.enableVertexAttribArray(index);
-	};
-
-	/**
-	 * Disables the `index`-th vertex attribute array.
-	 *
-	 * `gl.disableVertexAttribArray` equivalent.
-	 *
-	 * @method disable
-	 * @example
-	 *	TODO
-	 */
-	buffer.disable = function () {
-		context.disableVertexAttribArray(index);
-	};
-
-	/**
-	 * Specifies a pointer to this buffer for the `index`-th vertex attribute
-	 * array.
-	 *
-	 * `gl.vertexAttribPointer` equivalent.
-	 *
-	 * @method pointer
-	 * @param {Number} [stride=0] The stride between consecutive elements in the
-	 *	array (see the explanation for the equivalent argument in
-	 *	`gl.vertexAttribPointer`).
-	 * @param {Number} [offset=0] The index of the first element of the
-	 *	underlying buffer to be used for the attribute array.
-	 *
-	 * This value is multiplied by the data type size and used as the `pointer`
-	 * parameter in the `gl.vertexAttribPointer` call.
-	 * @example
-	 *	var array = new oogl.AttributeArray3(0, 'float', [1, 2, 3, 4, 5, 6, 7, 8]);
-	 *	array.bind();
-	 *	array.pointer();
-	 */
-	buffer.pointer = function (stride, offset) {
-		context.vertexAttribPointer(index, 3, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
-	};
-
-	/**
-	 * Binds this buffer to its target and then specifies its pointer for the
-	 * `index`-th vertex attribute array.
-	 *
-	 * You may optionally specify `stride` and `offset` parameters.
-	 *
-	 * Equivalent to calling `bind` and `pointer` subsequently.
-	 *
-	 * @method bindAndPointer
-	 * @param {Number} [stride=0] The stride between consecutive elements in the
-	 *	array (see the explanation for the equivalent argument in
-	 *	`gl.vertexAttribPointer`).
-	 * @param {Number} [offset=0] The index of the first element of the
-	 *	underlying buffer to be used for the attribute array.
-	 *
-	 * This value is multiplied by the data type size and used as the `pointer`
-	 * parameter in the `gl.vertexAttribPointer` call.
-	 * @example
-	 *	buffer.bindAndPointer();
-	 */
-	buffer.bindAndPointer = function (stride, offset) {
-		context.bindBuffer(context.ARRAY_BUFFER, buffer);
-		context.vertexAttribPointer(index, 3, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
-	};
-
-	/**
-	 * TODO
-	 *
-	 * @method enableBindAndPointer
-	 * @param {Number} [stride=0] The stride between consecutive elements in the
-	 *	array (see the explanation for the equivalent argument in
-	 *	`gl.vertexAttribPointer`).
-	 * @param {Number} [offset=0] The index of the first element of the
-	 *	underlying buffer to be used for the attribute array.
-	 *
-	 * This value is multiplied by the data type size and used as the `pointer`
-	 * parameter in the `gl.vertexAttribPointer` call.
-	 * @example
-	 *	TODO
-	 */
-	buffer.enableBindAndPointer = function (stride, offset) {
-		context.enableVertexAttribArray(index);
-		context.bindBuffer(context.ARRAY_BUFFER, buffer);
-		context.vertexAttribPointer(index, 3, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
-	};
-
-	return buffer;
-};
-
-/**
- * Creates an array buffer with static draw usage representing a 4-component
- * vertex attribute array.
- *
- * The attribute array is associated to the specified `index`: the provided
- * `enable` and `disable` methods enable and disable the `index`-th attribute
- * array calling `gl.enableVertexAttribArray` and `gl.disableVertexAttribArray`
- * and the provided `pointer` method invokes `gl.vertexAttribPointer` with the
- * specified `index` and `type`.
- *
- * @class context.AttributeArray4
- * @extends context.StaticArrayBuffer
- * @constructor
- * @param {Number} index The attribute array index.
- * @param {String} type One of `byte`, `ubyte`, `short`, `ushort` or `float`;
- *	indicates the type of the data that will be put in the buffer.
- * @param {Number[]} data A JavaScript `Array` containing the array data; it
- *	will be automatically converted to a typed array.
- * @param {Boolean} [normalize=false] Indicates whether the elements of the
- *	array must be automatically normalized by the GL (see the explanation for
- *	the equivalent argument in `gl.vertexAttribPointer`).
- * @example
- *	var array = new oogl.AttributeArray4(0, 'float', [1, 2, 3, 4, 5, 6, 7, 8]);
- */
-context.AttributeArray4 = function (index, type, data, normalize) {
-	var types = {
-		'byte': {
-			glType: context.BYTE,
-			size: 1
-		},
-		'ubyte': {
-			glType: context.UNSIGNED_BYTE,
-			size: 1
-		},
-		'short': {
-			glType: context.SHORT,
-			size: 2
-		},
-		'ushort': {
-			glType: context.UNSIGNED_SHORT,
-			size: 2
-		},
-		'float': {
-			glType: context.FLOAT,
-			size: 4
-		}
-	};
-	if (!types.hasOwnProperty(type)) {
-		throw 'Invalid attribute type, must be one of "byte", "ubyte", "short", "ushort" and "float".';
-	}
-
-	var buffer = new context.StaticArrayBuffer(type);
-	buffer.bindAndData(data);
-
-	/**
-	 * Enables the `index`-th vertex attribute array.
-	 *
-	 * `gl.enableVertexAttribArray` equivalent.
-	 *
-	 * @method enable
-	 * @example
-	 *	TODO
-	 */
-	buffer.enable = function () {
-		context.enableVertexAttribArray(index);
-	};
-
-	/**
-	 * Disables the `index`-th vertex attribute array.
-	 *
-	 * `gl.disableVertexAttribArray` equivalent.
-	 *
-	 * @method disable
-	 * @example
-	 *	TODO
-	 */
-	buffer.disable = function () {
-		context.disableVertexAttribArray(index);
-	};
-
-	/**
-	 * Specifies a pointer to this buffer for the `index`-th vertex attribute
-	 * array.
-	 *
-	 * You may optionally specify `stride` and `offset` parameters.
-	 *
-	 * `gl.vertexAttribPointer` equivalent.
-	 *
-	 * @method pointer
-	 * @param {Number} [stride=0] The stride between consecutive elements in the
-	 *	array (see the explanation for the equivalent argument in
-	 *	`gl.vertexAttribPointer`).
-	 * @param {Number} [offset=0] The index of the first element of the
-	 *	underlying buffer to be used for the attribute array.
-	 *
-	 * This value is multiplied by the data type size and used as the `pointer`
-	 * parameter in the `gl.vertexAttribPointer` call.
-	 * @example
-	 *	var array = new oogl.AttributeArray4(0, 'float', [1, 2, 3, 4, 5, 6, 7, 8]);
-	 *	array.bind();
-	 *	array.pointer();
-	 */
-	buffer.pointer = function (stride, offset) {
-		context.vertexAttribPointer(index, 4, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
-	};
-
-	/**
-	 * Binds this buffer to its target and then specifies its pointer for the
-	 * `index`-th vertex attribute array.
-	 *
-	 * You may optionally specify `stride` and `offset` parameters.
-	 *
-	 * Equivalent to calling `bind` and `pointer` subsequently.
-	 *
-	 * @method bindAndPointer
-	 * @param {Number} [stride=0] The stride between consecutive elements in the
-	 *	array (see the explanation for the equivalent argument in
-	 *	`gl.vertexAttribPointer`).
-	 * @param {Number} [offset=0] The index of the first element of the
-	 *	underlying buffer to be used for the attribute array.
-	 *
-	 * This value is multiplied by the data type size and used as the `pointer`
-	 * parameter in the `gl.vertexAttribPointer` call.
-	 * @example
-	 *	buffer.bindAndPointer();
-	 */
-	buffer.bindAndPointer = function (stride, offset) {
-		context.bindBuffer(context.ARRAY_BUFFER, buffer);
-		context.vertexAttribPointer(index, 4, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
-	};
-
-	/**
-	 * TODO
-	 *
-	 * @method enableBindAndPointer
-	 * @param {Number} [stride=0] The stride between consecutive elements in the
-	 *	array (see the explanation for the equivalent argument in
-	 *	`gl.vertexAttribPointer`).
-	 * @param {Number} [offset=0] The index of the first element of the
-	 *	underlying buffer to be used for the attribute array.
-	 *
-	 * This value is multiplied by the data type size and used as the `pointer`
-	 * parameter in the `gl.vertexAttribPointer` call.
-	 * @example
-	 *	TODO
-	 */
-	buffer.enableBindAndPointer = function (stride, offset) {
-		context.enableVertexAttribArray(index);
-		context.bindBuffer(context.ARRAY_BUFFER, buffer);
-		context.vertexAttribPointer(index, 4, types[type].glType, !!normalize, (stride || 0) * types[type].size, (offset || 0) * types[type].size);
-	};
-
-	return buffer;
-};
+[1, 2, 3, 4].forEach(function(num) {
+  context['AttributeArray' + num] = function(index, type, data, normalize) {
+    return context.AttributeArray(index, type, num, 'static', data, normalize);
+  };
+  context['StreamAttributeArray' + num] = function(index, type, data, normalize) {
+    return context.AttributeArray(index, type, num, 'stream', data, normalize);
+  };
+  context['DynamicAttributeArray' + num] = function(index, type, data, normalize) {
+    return context.AttributeArray(index, type, num, 'dynamic', data, normalize);
+  };
+});
 
 /**
  * Represents a set of vertex attribute arrays; simplifies the management of
