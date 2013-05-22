@@ -32,6 +32,8 @@ OOGL.Matrix4 = function (data) {
 	for (var i = 0; i < 16; i++) {
 		this[i] = data[i];
 	}
+
+  this.length = data.length;
 };
 
 OOGL.Matrix4.prototype = {

@@ -31,6 +31,8 @@ OOGL.Matrix3 = function (data) {
 	for (var i = 0; i < 9; i++) {
 		this[i] = data[i];
 	}
+
+  this.length = data.length;
 };
 
 OOGL.Matrix3.prototype = {
