@@ -791,9 +791,16 @@ context.ElementArray = function (indices, type) {
 	var count = indices.length;
 
 	var types = {
-		'ubyte': context.UNSIGNED_BYTE,
-		'ushort': context.UNSIGNED_SHORT
+		'ubyte': {
+      'glType': context.UNSIGNED_BYTE,
+      'size': 1
+    },
+		'ushort': {
+      'glType': context.UNSIGNED_SHORT,
+      'size': 2
+    }
 	};
+
 	if (!types.hasOwnProperty(type)) {
 		throw 'Invalid element type, must be either "ubyte" or "ushort".';
 	}
@@ -815,13 +822,44 @@ context.ElementArray = function (indices, type) {
 	 */
 	buffer.drawTriangles = (function (all) {
 		return function (offset, count) {
-			if (arguments.length < 2) {
-				count = all;
-				if (arguments.length < 1) {
-					offset = 0;
-				}
-			}
-			context.drawElements(context.TRIANGLES, count, types[type], offset);
+      offset = offset || 0;
+      count = count || all;
+			context.drawElements(context.TRIANGLES, count, types[type].glType, offset * types[type].size);
+		};
+	})(count);
+
+	/**
+	 * Draws the elements in `gl.TRIANGLES` mode with vertex offset
+	 *
+	 * @method drawTrianglesBaseVertex
+	 * @param {Number} [offset=0] The index of the first element to draw.
+	 * @param {Number} [count] The number of elements to draw. When not
+	 *	specified defaults to the `count` parameter passed to the `ElementArray`
+	 *	constructor.
+   * @param {Number} [vertexOffset=0] The base offset of first vertex to draw.
+	 * @example
+	 */
+	buffer.drawTrianglesBaseVertex = (function (all) {
+		return function (vertexOffset, offset, count) {
+      var i,
+          shiftedIndices = indices.slice();
+
+      offset = offset || 0;
+      count = count || all;
+      vertexOffset = vertexOffset || 0;
+
+      if (vertexOffset !== 0) {
+        for (i = 0; i < shiftedIndices.length; ++i) {
+          shiftedIndices[i] += vertexOffset;
+        }
+        buffer.subData(0, shiftedIndices);
+      }
+
+			context.drawElements(context.TRIANGLES, count, types[type].glType, offset * types[type].size);
+
+      if (vertexOffset !== 0) {
+        buffer.subData(0, indices);
+      }
 		};
 	})(count);
 
@@ -839,13 +877,9 @@ context.ElementArray = function (indices, type) {
 	 */
 	buffer.drawTriangleFan = (function (all) {
 		return function (offset, count) {
-			if (arguments.length < 2) {
-				count = all;
-				if (arguments.length < 1) {
-					offset = 0;
-				}
-			}
-			context.drawElements(context.TRIANGLE_FAN, count, types[type], offset);
+      offset = offset || 0;
+      count = count || all;
+			context.drawElements(context.TRIANGLE_FAN, count, types[type].glType, offset * types[type].size);
 		};
 	})(count);
 
@@ -863,13 +897,9 @@ context.ElementArray = function (indices, type) {
 	 */
 	buffer.drawTriangleStrip = (function (all) {
 		return function (offset, count) {
-			if (arguments.length < 2) {
-				count = all;
-				if (arguments.length < 1) {
-					offset = 0;
-				}
-			}
-			context.drawElements(context.TRIANGLE_STRIP, count, types[type], offset);
+      offset = offset || 0;
+      count = count || all;
+			context.drawElements(context.TRIANGLE_STRIP, count, types[type].glType, offset * types[type].size);
 		};
 	})(count);
 
